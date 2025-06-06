@@ -10,7 +10,12 @@ import org.amalitechrichmond.projecttracker.model.Task;
 import org.amalitechrichmond.projecttracker.repository.DeveloperRepository;
 import org.amalitechrichmond.projecttracker.repository.ProjectRepository;
 import org.amalitechrichmond.projecttracker.repository.TaskRepository;
+import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.amalitechrichmond.projecttracker.service.TaskService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +32,7 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final DeveloperRepository developerRepository;
+    private final AuditLogService auditLogService;
 
     @Override
     public TaskDTO createTask(TaskDTO taskDTO) {
@@ -35,7 +41,7 @@ public class TaskServiceImpl implements TaskService {
         Set<Developer> developers = fetchDevelopersByIds(taskDTO.getDeveloperIds());
         Task task = TaskMapper.toEntity(taskDTO, project, developers);
         Task savedTask = taskRepository.save(task);
-
+        auditLogService.saveLog("CREATE","Task",String.valueOf(savedTask.getId()), savedTask,"developer");
         return TaskMapper.toDTO(savedTask);
     }
 
@@ -74,7 +80,7 @@ public class TaskServiceImpl implements TaskService {
             Set<Developer> developers = fetchDevelopersByIds(taskDTO.getDeveloperIds());
             existingTask.setDevelopers(developers);
         }
-
+        auditLogService.saveLog("UPDATE","Task",String.valueOf(existingTask.getId()), existingTask,"developer");
         return TaskMapper.toDTO(taskRepository.save(existingTask));
     }
 
@@ -83,8 +89,52 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         taskRepository.delete(task);
+        auditLogService.saveLog("DELETE","Task",String.valueOf(id), task,"developer");
         return TaskMapper.toDTO(task);
     }
+
+    @Override
+    public TaskDTO assignDeveloperToTask(Long taskId, Long developerId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        Developer developer = developerRepository.findById(developerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Developer not found with id: " + developerId));
+
+        // Initialize if null
+        if (task.getDevelopers() == null) {
+            task.setDevelopers(new HashSet<>());
+        }
+
+        task.getDevelopers().add(developer);
+        Task updatedTask = taskRepository.save(task);
+
+        // Audit (Optional)
+        auditLogService.saveLog(
+                "UPDATE",
+                "Task",
+                task.getId().toString(),
+                updatedTask,
+                "developer"
+        );
+
+        return TaskMapper.toDTO(updatedTask);
+    }
+
+    @Override
+    public List<TaskDTO> getTasksByProjectId(Long projectId, int page, int size, String sortBy, String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<Task> tasks = taskRepository.findByProjectId(projectId, pageable);
+        return tasks.stream().map(TaskMapper::toDTO).toList();
+    }
+
+    @Override
+    public List<TaskDTO> getTasksByDeveloperId(Long developerId, int page, int size, String sortBy, String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<Task> tasks = taskRepository.findByDevelopers_Id(developerId, pageable);
+        return tasks.stream().map(TaskMapper::toDTO).toList();
+    }
+
 
     //  Utility method to fetch developer entities from IDs
     private Set<Developer> fetchDevelopersByIds(Set<Long> ids) {
