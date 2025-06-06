@@ -6,6 +6,10 @@ import org.amalitechrichmond.projecttracker.model.Project;
 import org.amalitechrichmond.projecttracker.repository.ProjectRepository;
 import org.amalitechrichmond.projecttracker.mapper.ProjectMapper;
 import org.amalitechrichmond.projecttracker.service.ProjectService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,21 +22,24 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final AuditLogServiceImpl auditService;
 
     @Override
     public ProjectDTO createProject(ProjectDTO projectDTO) {
         Project project = ProjectMapper.toEntity(projectDTO);
         project.setDeadline(java.time.LocalDate.now());
         Project saved = projectRepository.save(project);
+        auditService.saveLog("CREATE","Project",String.valueOf(saved.getId()), saved,"developer");
         return ProjectMapper.toDTO(saved);
     }
 
     @Override
-    public List<ProjectDTO> getAllProjects() {
-        return projectRepository.findAll().stream()
-                .map(ProjectMapper::toDTO)
-                .collect(Collectors.toList());
+    public List<ProjectDTO> getAllProjects(int page, int size, String sortBy, String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<Project> projects = projectRepository.findAll(pageable);
+        return projects.stream().map(ProjectMapper::toDTO).toList();
     }
+
 
     @Override
     public ProjectDTO getProjectById(long id) {
@@ -56,6 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
         existing.setStatus(projectDTO.getStatus());
 
         Project updated = projectRepository.save(existing);
+        auditService.saveLog("UPDATE","Project",String.valueOf(updated.getId()), String.valueOf(updated),"developer");
         return ProjectMapper.toDTO(updated);
     }
 
@@ -64,6 +72,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with ID: " + id));
         projectRepository.delete(project);
+        auditService.saveLog("DELETE","Project",String.valueOf(id), String.valueOf(project),"developer");
         return ProjectMapper.toDTO(project);
     }
 }

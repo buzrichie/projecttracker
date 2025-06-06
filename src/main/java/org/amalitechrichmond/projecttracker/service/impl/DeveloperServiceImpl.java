@@ -6,12 +6,16 @@ import org.amalitechrichmond.projecttracker.exception.ResourceNotFoundException;
 import org.amalitechrichmond.projecttracker.mapper.DeveloperMapper;
 import org.amalitechrichmond.projecttracker.model.Developer;
 import org.amalitechrichmond.projecttracker.repository.DeveloperRepository;
+import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.amalitechrichmond.projecttracker.service.DeveloperService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,20 +23,25 @@ import java.util.stream.Collectors;
 public class DeveloperServiceImpl implements DeveloperService {
 
     private final DeveloperRepository developerRepository;
+    private final AuditLogService auditLogService;
 
     @Override
     public DeveloperDTO createDeveloper(DeveloperDTO developerDTO) {
         Developer developer = DeveloperMapper.toEntity(developerDTO);
         Developer saved = developerRepository.save(developer);
+        auditLogService.saveLog("CREATE","Developer",String.valueOf(saved.getId()), saved,"developer");
         return DeveloperMapper.toDTO(saved);
     }
 
     @Override
-    public List<DeveloperDTO> getAllDevelopers() {
-        return developerRepository.findAll().stream()
+    public List<DeveloperDTO> getAllDevelopers(int page, int size, String sortBy, String sortDir) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
+        Page<Developer> developerPage = developerRepository.findAll(pageable);
+        return developerPage.stream()
                 .map(DeveloperMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
+
 
     @Override
     public DeveloperDTO getDeveloperById(long id) {
@@ -51,6 +60,7 @@ public class DeveloperServiceImpl implements DeveloperService {
         developer.setSkills(developerDTO.getSkills());
 
         Developer updated = developerRepository.save(developer);
+        auditLogService.saveLog("CREATE","Developer",String.valueOf(updated.getId()), updated,"developer");
         return DeveloperMapper.toDTO(updated);
     }
 
@@ -59,6 +69,7 @@ public class DeveloperServiceImpl implements DeveloperService {
         Developer developer = developerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + id));
         developerRepository.delete(developer);
+        auditLogService.saveLog("DELETE","Developer",String.valueOf(id), developer,"developer");
         return DeveloperMapper.toDTO(developer);
     }
 }
