@@ -67,4 +67,9 @@ public class DeveloperController {
         DeveloperDTO deleted = developerService.deleteDeveloper(id);
         return ResponseEntity.ok(deleted);
     }
+    @GetMapping("/top")
+    @Operation(summary = "Get top 5 developers")
+    public ResponseEntity<List<DeveloperDTO>> getTopDevelopers() {
+        return ResponseEntity.ok(developerService.getTop5Developers());
+    }
 }
