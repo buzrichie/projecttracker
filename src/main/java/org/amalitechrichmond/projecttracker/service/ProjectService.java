@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ProjectService {
     ProjectDTO createProject(ProjectDTO projectDTO);
-    List<ProjectDTO> getAllProjects();
+    List<ProjectDTO> getAllProjects(int page, int size, String sortBy, String sortDir);
     ProjectDTO getProjectById(long id);
     ProjectDTO updateProject(ProjectDTO projectDTO);
     ProjectDTO deleteProject(long id);
