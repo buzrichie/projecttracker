@@ -10,4 +10,5 @@ public interface ProjectService {
     ProjectDTO getProjectById(long id);
     ProjectDTO updateProject(ProjectDTO projectDTO);
     ProjectDTO deleteProject(long id);
+    List<ProjectDTO> getProjectsWithoutTasks();
 }
