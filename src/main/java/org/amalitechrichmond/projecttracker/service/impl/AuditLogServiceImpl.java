@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.amalitechrichmond.projecttracker.model.AuditLog;
 import org.amalitechrichmond.projecttracker.repository.AuditLogRepository;
 import org.amalitechrichmond.projecttracker.service.AuditLogService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"allAuditLogs", "auditLogsByEntityType", "auditLogsByActorName"}, allEntries = true)
     public <T> void saveLog(String actionType, String entityType, String entityId, T payload, String actorName) {
         AuditLog log = new AuditLog();
         log.setActionType(actionType);
@@ -41,6 +44,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     // Get all audit logs
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "allAuditLogs")
     public List<AuditLog> getAllLogs() {
         List<AuditLog> logs = auditLogRepository.findAll();
         System.out.println(logs);
@@ -50,6 +54,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     // Get logs filtered by entity type
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "auditLogsByEntityType", key = "#entityType")
     public  List<AuditLog> getLogsByEntityType(String entityType) {
         return auditLogRepository.findByEntityType(entityType);
     }
@@ -57,6 +62,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     // Get logs filtered by actor name
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "auditLogsByActorName", key = "#actorName")
     public  List<AuditLog> getLogsByActorName(String actorName) {
         return auditLogRepository.findByActorName(actorName);
     }
