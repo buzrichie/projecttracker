@@ -11,4 +11,8 @@ public interface TaskService {
     TaskDTO getTaskById(long id);
     TaskDTO updateTask(TaskDTO taskDTO);
     TaskDTO deleteTask(long id);
+    TaskDTO assignDeveloperToTask(Long taskId, Long developerId);
+    List<TaskDTO> getTasksByProjectId(Long projectId, int page, int size, String sortBy, String sortDir);
+    List<TaskDTO> getTasksByDeveloperId(Long developerId, int page, int size, String sortBy, String sortDir);
+
 }
