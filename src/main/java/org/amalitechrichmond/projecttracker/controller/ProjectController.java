@@ -51,4 +51,11 @@ public class ProjectController {
     public ResponseEntity<ProjectDTO> deleteProject(@Valid @PathVariable Long id) {
         return ResponseEntity.ok(projectService.deleteProject(id));
     }
+
+    @GetMapping("/without-tasks")
+    @Operation(summary = "Get all projects without task")
+    public ResponseEntity<List<ProjectDTO>> getProjectsWithoutTasks() {
+        return ResponseEntity.ok(projectService.getProjectsWithoutTasks());
+    }
+
 }

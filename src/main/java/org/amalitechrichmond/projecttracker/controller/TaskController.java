@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.amalitechrichmond.projecttracker.DTO.TaskDTO;
+import org.amalitechrichmond.projecttracker.repository.TaskStatusCount;
 import org.amalitechrichmond.projecttracker.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,7 @@ public class TaskController {
     }
 
     @GetMapping("/by-project/{projectId}")
+    @Operation(summary = "Get a task by project ID")
     public ResponseEntity<List<TaskDTO>> getTasksByProjectId(
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "0") int page,
@@ -73,6 +75,7 @@ public class TaskController {
     }
 
     @GetMapping("/by-developer/{developerId}")
+    @Operation(summary = "Get a task by developer ID")
     public ResponseEntity<List<TaskDTO>> getTasksByDeveloperId(
             @PathVariable Long developerId,
             @RequestParam(defaultValue = "0") int page,
@@ -83,5 +86,18 @@ public class TaskController {
         List<TaskDTO> tasks = taskService.getTasksByDeveloperId(developerId, page, size, sortBy, sortDir);
         return ResponseEntity.ok(tasks);
     }
+
+    @GetMapping("/overdue")
+    @Operation(summary = "Get all overdue tasks")
+    public ResponseEntity<List<TaskDTO>> getOverdueTasks() {
+        return ResponseEntity.ok(taskService.getOverdueTasks());
+    }
+
+
+    @GetMapping("/status-summary")
+    public ResponseEntity<List<TaskStatusCount>> getTaskStatusSummary() {
+        return ResponseEntity.ok(taskService.getTaskStatusCounts());
+    }
+
 
 }
