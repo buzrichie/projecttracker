@@ -25,6 +25,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final AuditLogServiceImpl auditService;
 
     @Override
+    @Transactional
     public ProjectDTO createProject(ProjectDTO projectDTO) {
         Project project = ProjectMapper.toEntity(projectDTO);
         project.setDeadline(java.time.LocalDate.now());
@@ -34,6 +35,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProjectDTO> getAllProjects(int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<Project> projects = projectRepository.findAll(pageable);
@@ -42,6 +44,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public ProjectDTO getProjectById(long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with ID: " + id));
@@ -49,6 +52,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
     public ProjectDTO updateProject(ProjectDTO projectDTO) {
         if (projectDTO.getId() == null) {
             throw new IllegalArgumentException("Project ID must be provided for update.");
@@ -68,6 +72,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
     public ProjectDTO deleteProject(long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with ID: " + id));
@@ -75,4 +80,12 @@ public class ProjectServiceImpl implements ProjectService {
         auditService.saveLog("DELETE","Project",String.valueOf(id), String.valueOf(project),"developer");
         return ProjectMapper.toDTO(project);
     }
+    @Transactional(readOnly = true)
+    public List<ProjectDTO> getProjectsWithoutTasks() {
+        return projectRepository.findProjectsWithoutTasks()
+                .stream()
+                .map(ProjectMapper::toDTO)
+                .toList();
+    }
+
 }

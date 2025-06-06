@@ -10,6 +10,7 @@ import org.amalitechrichmond.projecttracker.model.Task;
 import org.amalitechrichmond.projecttracker.repository.DeveloperRepository;
 import org.amalitechrichmond.projecttracker.repository.ProjectRepository;
 import org.amalitechrichmond.projecttracker.repository.TaskRepository;
+import org.amalitechrichmond.projecttracker.repository.TaskStatusCount;
 import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.amalitechrichmond.projecttracker.service.TaskService;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class TaskServiceImpl implements TaskService {
     private final AuditLogService auditLogService;
 
     @Override
+    @Transactional
     public TaskDTO createTask(TaskDTO taskDTO) {
         Project project = projectRepository.findById(taskDTO.getProjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
@@ -46,6 +48,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TaskDTO> getAllTasks() {
         return taskRepository.findAll().stream()
                 .map(TaskMapper::toDTO)
@@ -53,6 +56,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public TaskDTO getTaskById(long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -60,6 +64,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDTO updateTask(TaskDTO taskDTO) {
         Task existingTask = taskRepository.findById(taskDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -85,6 +90,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDTO deleteTask(long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -94,6 +100,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public TaskDTO assignDeveloperToTask(Long taskId, Long developerId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
@@ -122,6 +129,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TaskDTO> getTasksByProjectId(Long projectId, int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<Task> tasks = taskRepository.findByProjectId(projectId, pageable);
@@ -129,10 +137,26 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TaskDTO> getTasksByDeveloperId(Long developerId, int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<Task> tasks = taskRepository.findByDevelopers_Id(developerId, pageable);
         return tasks.stream().map(TaskMapper::toDTO).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskDTO> getOverdueTasks() {
+        return taskRepository.findOverdueTasks()
+                .stream()
+                .map(TaskMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskStatusCount> getTaskStatusCounts() {
+        return taskRepository.countTasksByStatus();
     }
 
 

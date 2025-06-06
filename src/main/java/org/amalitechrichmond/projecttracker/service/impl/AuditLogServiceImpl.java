@@ -7,6 +7,7 @@ import org.amalitechrichmond.projecttracker.model.AuditLog;
 import org.amalitechrichmond.projecttracker.repository.AuditLogRepository;
 import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     private final ObjectMapper objectMapper;
 
     @Override
+    @Transactional
     public <T> void saveLog(String actionType, String entityType, String entityId, T payload, String actorName) {
         AuditLog log = new AuditLog();
         log.setActionType(actionType);
@@ -38,18 +40,23 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     // Get all audit logs
     @Override
+    @Transactional(readOnly = true)
     public List<AuditLog> getAllLogs() {
-        return auditLogRepository.findAll();
+        List<AuditLog> logs = auditLogRepository.findAll();
+        System.out.println(logs);
+        return logs;
     }
 
     // Get logs filtered by entity type
     @Override
+    @Transactional(readOnly = true)
     public  List<AuditLog> getLogsByEntityType(String entityType) {
         return auditLogRepository.findByEntityType(entityType);
     }
 
     // Get logs filtered by actor name
     @Override
+    @Transactional(readOnly = true)
     public  List<AuditLog> getLogsByActorName(String actorName) {
         return auditLogRepository.findByActorName(actorName);
     }

@@ -26,6 +26,7 @@ public class DeveloperServiceImpl implements DeveloperService {
     private final AuditLogService auditLogService;
 
     @Override
+    @Transactional
     public DeveloperDTO createDeveloper(DeveloperDTO developerDTO) {
         Developer developer = DeveloperMapper.toEntity(developerDTO);
         Developer saved = developerRepository.save(developer);
@@ -34,6 +35,7 @@ public class DeveloperServiceImpl implements DeveloperService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DeveloperDTO> getAllDevelopers(int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<Developer> developerPage = developerRepository.findAll(pageable);
@@ -42,8 +44,8 @@ public class DeveloperServiceImpl implements DeveloperService {
                 .toList();
     }
 
-
     @Override
+    @Transactional(readOnly = true)
     public DeveloperDTO getDeveloperById(long id) {
         Developer developer = developerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + id));
@@ -51,6 +53,7 @@ public class DeveloperServiceImpl implements DeveloperService {
     }
 
     @Override
+    @Transactional
     public DeveloperDTO updateDeveloper(DeveloperDTO developerDTO) {
         Developer developer = developerRepository.findById(developerDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + developerDTO.getId()));
@@ -65,6 +68,7 @@ public class DeveloperServiceImpl implements DeveloperService {
     }
 
     @Override
+    @Transactional
     public DeveloperDTO deleteDeveloper(long id) {
         Developer developer = developerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + id));
@@ -72,4 +76,14 @@ public class DeveloperServiceImpl implements DeveloperService {
         auditLogService.saveLog("DELETE","Developer",String.valueOf(id), developer,"developer");
         return DeveloperMapper.toDTO(developer);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeveloperDTO> getTop5Developers() {
+        return developerRepository.findTop5ByOrderByTasksSizeDesc()
+                .stream()
+                .map(DeveloperMapper::toDTO)
+                .toList();
+    }
+
 }
