@@ -8,6 +8,8 @@ import org.amalitechrichmond.projecttracker.model.Developer;
 import org.amalitechrichmond.projecttracker.repository.DeveloperRepository;
 import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.amalitechrichmond.projecttracker.service.DeveloperService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +29,7 @@ public class DeveloperServiceImpl implements DeveloperService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"developers", "developerById", "top5Developers"}, allEntries = true)
     public DeveloperDTO createDeveloper(DeveloperDTO developerDTO) {
         Developer developer = DeveloperMapper.toEntity(developerDTO);
         Developer saved = developerRepository.save(developer);
@@ -36,6 +39,7 @@ public class DeveloperServiceImpl implements DeveloperService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "developers", key = "#page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
     public List<DeveloperDTO> getAllDevelopers(int page, int size, String sortBy, String sortDir) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.fromString(sortDir), sortBy));
         Page<Developer> developerPage = developerRepository.findAll(pageable);
@@ -46,6 +50,7 @@ public class DeveloperServiceImpl implements DeveloperService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "developerById", key = "#id")
     public DeveloperDTO getDeveloperById(long id) {
         Developer developer = developerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + id));
@@ -54,6 +59,7 @@ public class DeveloperServiceImpl implements DeveloperService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"developers", "developerById", "top5Developers"}, key = "#developerDTO.id", allEntries = true)
     public DeveloperDTO updateDeveloper(DeveloperDTO developerDTO) {
         Developer developer = developerRepository.findById(developerDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + developerDTO.getId()));
@@ -69,6 +75,7 @@ public class DeveloperServiceImpl implements DeveloperService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"developers", "developerById", "top5Developers"}, key = "#id", allEntries = true)
     public DeveloperDTO deleteDeveloper(long id) {
         Developer developer = developerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + id));
@@ -79,6 +86,7 @@ public class DeveloperServiceImpl implements DeveloperService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "top5Developers")
     public List<DeveloperDTO> getTop5Developers() {
         return developerRepository.findTop5ByOrderByTasksSizeDesc()
                 .stream()
