@@ -2,7 +2,9 @@
 
 ## 📌 Overview
 
-Project Tracker API is a Spring Boot backend application that allows users to manage projects, tasks, and developers. It includes audit logging with MongoDB, supports pagination, sorting, caching, and advanced querying. Built for BuildMaster to track team productivity and task status effectively.
+Project Tracker API is a Spring Boot backend application that allows users to manage projects, tasks, and developers. 
+It includes audit logging with MongoDB, supports pagination, sorting, caching, and advanced querying. 
+Built for BuildMaster to track team productivity and task status effectively.
 
 ---
 
