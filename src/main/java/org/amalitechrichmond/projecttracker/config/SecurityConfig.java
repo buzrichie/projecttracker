@@ -1,6 +1,7 @@
 package org.amalitechrichmond.projecttracker.config;
 
 import org.amalitechrichmond.projecttracker.filter.JwtAuthenticationFilter;
+import org.amalitechrichmond.projecttracker.security.OAuth2LoginSuccessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-
+    @Autowired
+    private OAuth2LoginSuccessService oAuth2LoginSuccessService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,7 +34,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // Secure all other endpoints
                 ).httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2 -> oauth2
+               .successHandler(oAuth2LoginSuccessService));
 
         return http.build();
     }
