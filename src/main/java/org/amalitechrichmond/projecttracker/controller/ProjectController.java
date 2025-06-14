@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.amalitechrichmond.projecttracker.DTO.ProjectDTO;
+import org.amalitechrichmond.projecttracker.DTO.ProjectSummaryDTO;
 import org.amalitechrichmond.projecttracker.service.ProjectService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,11 +22,14 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PostMapping
     @Operation(summary = "Create a new project")
     public ResponseEntity<ProjectDTO> createProject(@Valid @RequestBody ProjectDTO projectDTO) {
         return new ResponseEntity<>(projectService.createProject(projectDTO), HttpStatus.CREATED);
     }
+
+
 
     @GetMapping
     @Operation(summary = "Get all projects with pagination and sorting")
@@ -38,7 +43,7 @@ public class ProjectController {
         return ResponseEntity.ok(projects);
     }
 
-
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing project by ID")
     public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
@@ -57,5 +62,13 @@ public class ProjectController {
     public ResponseEntity<List<ProjectDTO>> getProjectsWithoutTasks() {
         return ResponseEntity.ok(projectService.getProjectsWithoutTasks());
     }
+
+    @GetMapping("/{id}/summary")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    public ResponseEntity<ProjectSummaryDTO> getProjectSummary(@PathVariable Long id) {
+        ProjectSummaryDTO summary = projectService.getProjectSummary(id);
+        return ResponseEntity.ok(summary);
+    }
+
 
 }
