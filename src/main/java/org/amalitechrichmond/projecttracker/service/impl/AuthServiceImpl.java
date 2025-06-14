@@ -1,19 +1,21 @@
 package org.amalitechrichmond.projecttracker.service.impl;
 
 import lombok.AllArgsConstructor;
+import org.amalitechrichmond.projecttracker.DTO.AuthLoginRequestDTO;
+import org.amalitechrichmond.projecttracker.DTO.AuthRegisterRequestDTO;
 import org.amalitechrichmond.projecttracker.DTO.UserDTO;
+import org.amalitechrichmond.projecttracker.enums.UserRole;
+import org.amalitechrichmond.projecttracker.exception.EmailAlreadyExist;
 import org.amalitechrichmond.projecttracker.mapper.UserMapper;
 import org.amalitechrichmond.projecttracker.model.User;
 import org.amalitechrichmond.projecttracker.repository.UserRepository;
 import org.amalitechrichmond.projecttracker.service.AuthService;
 import org.amalitechrichmond.projecttracker.provider.JwtTokenProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -22,37 +24,30 @@ public class AuthServiceImpl implements AuthService {
     PasswordEncoder passwordEncoder;
     UserRepository userRepository;
     JwtTokenProvider jwtTokenProvider;
+    AuthenticationManager authenticationManager;
 
     @Override
-    public String login(UserDTO userDTO) {
-        User user = userRepository.findByEmail(userDTO.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public String login(AuthLoginRequestDTO request) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        if (!passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid password");
-        }
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("email", user.getEmail());
-        claims.put("role", user.getRole());
-
-        System.out.println("UserId for subject "+ user.getId());
-        return jwtTokenProvider.generateToken(String.valueOf(user.getId()), claims);
+        return jwtTokenProvider.generateToken(authentication.getName());
     }
 
 
     @Override
-    public UserDTO register(UserDTO userDTO) {
-        if(userRepository.existsByEmailIs(userDTO.getEmail())){
-            throw new RuntimeException("Email already exists");
-        }
-        if (userRepository.existsByNameIs(userDTO.getName())){
-            throw new RuntimeException("Name already exists");
-        }
-        User user = UserMapper.toEntity(userDTO);
+    public UserDTO register(AuthRegisterRequestDTO request) {
+        checkForExistingData(request);
+        User user = UserMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(UserRole.ROLE_DEVELOPER);
 
         return UserMapper.toDto(userRepository.save(user));
+    }
+
+    private void checkForExistingData(AuthRegisterRequestDTO request) {
+        if(userRepository.existsByEmailIs(request.getEmail())){
+            throw new EmailAlreadyExist("Email already exists");
+        }
     }
 
 

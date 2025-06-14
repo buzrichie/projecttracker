@@ -2,7 +2,10 @@ package org.amalitechrichmond.projecttracker.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.amalitechrichmond.projecttracker.DTO.ProjectDTO;
+import org.amalitechrichmond.projecttracker.DTO.ProjectSummaryDTO;
+import org.amalitechrichmond.projecttracker.exception.ResourceNotFoundException;
 import org.amalitechrichmond.projecttracker.model.Project;
+import org.amalitechrichmond.projecttracker.model.User;
 import org.amalitechrichmond.projecttracker.repository.ProjectRepository;
 import org.amalitechrichmond.projecttracker.mapper.ProjectMapper;
 import org.amalitechrichmond.projecttracker.service.ProjectService;
@@ -95,5 +98,29 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(ProjectMapper::toDTO)
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectSummaryDTO getProjectSummary(Long id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+        ProjectSummaryDTO summary = new ProjectSummaryDTO();
+        summary.setProjectId(project.getId());
+        summary.setProjectName(project.getName());
+        summary.setDescription(project.getDescription());
+        summary.setStatus(project.getStatus().name());
+
+        int totalTasks = project.getTasks().size();
+        int completedTasks = (int) project.getTasks().stream()
+                .filter(task -> task.getStatus().name().equals("COMPLETED"))
+                .count();
+
+        summary.setTotalTasks(totalTasks);
+        summary.setCompletedTasks(completedTasks);
+
+        return summary;
+    }
+
 
 }
