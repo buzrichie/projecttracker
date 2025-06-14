@@ -9,7 +9,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.amalitechrichmond.projecttracker.enums.UserRole;
+import org.springframework.stereotype.Component;
 
+@Component
 @Data
 @Getter
 @Setter
