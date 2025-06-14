@@ -13,18 +13,20 @@ import org.amalitechrichmond.projecttracker.repository.TaskRepository;
 import org.amalitechrichmond.projecttracker.repository.TaskStatusCount;
 import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.amalitechrichmond.projecttracker.service.TaskService;
+import org.amalitechrichmond.projecttracker.util.AccessChecker;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +38,7 @@ public class TaskServiceImpl implements TaskService {
     private final ProjectRepository projectRepository;
     private final DeveloperRepository developerRepository;
     private final AuditLogService auditLogService;
+    private final AccessChecker accessChecker;
 
     @Override
     @Transactional
@@ -65,8 +68,36 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO getTaskById(long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Unauthenticated access.");
+        }
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            String currentUserId = authentication.getName();
+            long userIdLong;
+            try {
+                userIdLong = Long.parseLong(currentUserId);
+            } catch (NumberFormatException e) {
+                throw new AccessDeniedException("Invalid user ID.");
+            }
+
+            boolean isOwner = task.getDevelopers().stream()
+                    .anyMatch(dev -> dev.getId().equals(userIdLong));
+
+            if (!isOwner) {
+                throw new AccessDeniedException("You do not own this task.");
+            }
+        }
+
         return TaskMapper.toDTO(task);
     }
+
 
     @Override
     @Transactional
@@ -75,6 +106,9 @@ public class TaskServiceImpl implements TaskService {
         Task existingTask = taskRepository.findById(taskDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
+        if (existingTask.getDevelopers().stream().noneMatch(dev -> accessChecker.isOwner(dev.getEmail()))) {
+            throw new AccessDeniedException("You do not own this task.");
+        }
         // Update fields
         existingTask.setTitle(taskDTO.getTitle());
         existingTask.setDescription(taskDTO.getDescription());
