@@ -1,13 +1,12 @@
 package org.amalitechrichmond.projecttracker.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.amalitechrichmond.projecttracker.enums.UserRole;
+import org.springframework.stereotype.Component;
+
 
 @Entity
 @Getter
@@ -15,6 +14,7 @@ import org.amalitechrichmond.projecttracker.enums.UserRole;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +30,8 @@ public class User {
     @NotBlank
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(50) DEFAULT 'ROLE_DEVELOPER'")
     private UserRole role;
 
 }

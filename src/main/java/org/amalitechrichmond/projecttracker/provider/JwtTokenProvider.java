@@ -13,14 +13,20 @@ public class JwtTokenProvider {
 
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    private final long jwtExpirationMs = 86400000; // 1 day
-
-    public String generateToken(String id ,Map<String, Object> claims) {
+    public String generateToken(String id) {
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(id)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*24))
+                .signWith(key)
+                .compact();
+    }
+
+    public String generateToken(String id , Map<String, Object> claims) {
+        return Jwts.builder()
+                .setSubject(id)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000*60*24))
                 .signWith(key)
                 .compact();
     }
