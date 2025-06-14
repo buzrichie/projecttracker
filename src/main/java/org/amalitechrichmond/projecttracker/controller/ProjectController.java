@@ -63,7 +63,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.getProjectsWithoutTasks());
     }
 
-    @GetMapping("/{id}/summary")
+    @GetMapping("")
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ProjectSummaryDTO> getProjectSummary(@PathVariable Long id) {
         ProjectSummaryDTO summary = projectService.getProjectSummary(id);
