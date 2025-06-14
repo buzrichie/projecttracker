@@ -1,31 +1,27 @@
 package org.amalitechrichmond.projecttracker.security;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.amalitechrichmond.projecttracker.model.User;
 import org.amalitechrichmond.projecttracker.repository.UserRepository;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-
+@Slf4j
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-        // You can either load by ID depending on your use-case
-        User user = userRepository.findById(Long.valueOf(id))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
-
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), // This becomes principal (e.g., for SecurityContext)
-                user.getPassword(),
-                Collections.singleton(new SimpleGrantedAuthority(String.valueOf(user.getRole())))
-        );
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        //Load user from Database
+        log.info("Loading user by email: " + email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        log.info("User: " + user);
+        return new UserDetailsImpl(user);
     }
 }
 

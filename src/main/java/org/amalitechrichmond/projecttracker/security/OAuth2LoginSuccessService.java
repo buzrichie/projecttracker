@@ -41,7 +41,7 @@ public class OAuth2LoginSuccessService implements AuthenticationSuccessHandler {
     private User registerNewUser(String email, OAuth2User oAuth2User) {
         User user = new User();
         user.setEmail(email);
-        user.setName((String) oAuth2User.getAttributes().get("name")); // Google returns 'name'
+        user.setName((String) oAuth2User.getAttributes().get("name"));
         user.setRole(UserRole.ROLE_CONTRACTOR);
         // fix by removal
         String dummyPassword = "password";
