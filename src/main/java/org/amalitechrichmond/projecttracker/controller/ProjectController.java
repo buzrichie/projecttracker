@@ -29,7 +29,11 @@ public class ProjectController {
         return new ResponseEntity<>(projectService.createProject(projectDTO), HttpStatus.CREATED);
     }
 
-
+    @GetMapping("/without-tasks")
+    @Operation(summary = "Get all projects without task")
+    public ResponseEntity<List<ProjectDTO>> getProjectsWithoutTasks() {
+        return ResponseEntity.ok(projectService.getProjectsWithoutTasks());
+    }
 
     @GetMapping
     @Operation(summary = "Get all projects with pagination and sorting")
@@ -57,13 +61,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.deleteProject(id));
     }
 
-    @GetMapping("/without-tasks")
-    @Operation(summary = "Get all projects without task")
-    public ResponseEntity<List<ProjectDTO>> getProjectsWithoutTasks() {
-        return ResponseEntity.ok(projectService.getProjectsWithoutTasks());
-    }
-
-    @GetMapping("")
+    @GetMapping("/summary/{id}")
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public ResponseEntity<ProjectSummaryDTO> getProjectSummary(@PathVariable Long id) {
         ProjectSummaryDTO summary = projectService.getProjectSummary(id);
