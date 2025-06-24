@@ -3,6 +3,7 @@ package org.amalitechrichmond.projecttracker.service.impl;
 import lombok.AllArgsConstructor;
 import org.amalitechrichmond.projecttracker.DTO.AuthLoginRequestDTO;
 import org.amalitechrichmond.projecttracker.DTO.AuthRegisterRequestDTO;
+import org.amalitechrichmond.projecttracker.DTO.AuthResponseDTO;
 import org.amalitechrichmond.projecttracker.DTO.UserDTO;
 import org.amalitechrichmond.projecttracker.enums.UserRole;
 import org.amalitechrichmond.projecttracker.exception.EmailAlreadyExist;
@@ -27,10 +28,16 @@ public class AuthServiceImpl implements AuthService {
     AuthenticationManager authenticationManager;
 
     @Override
-    public String login(AuthLoginRequestDTO request) {
+    public AuthResponseDTO login(AuthLoginRequestDTO request) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        return jwtTokenProvider.generateToken(authentication.getName());
+        String token = jwtTokenProvider.generateToken(authentication.getName());
+        return AuthResponseDTO.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .username(authentication.getName())
+                .role(authentication.getAuthorities().iterator().next().getAuthority())
+                .build();
     }
 
 
