@@ -27,7 +27,6 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final AuditLogService auditLogService;
 
     @Override
     @Transactional

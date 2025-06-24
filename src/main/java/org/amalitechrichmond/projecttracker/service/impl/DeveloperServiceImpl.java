@@ -25,7 +25,6 @@ import java.util.List;
 public class DeveloperServiceImpl implements DeveloperService {
 
     private final DeveloperRepository developerRepository;
-    private final AuditLogService auditLogService;
 
     @Override
     @Transactional
