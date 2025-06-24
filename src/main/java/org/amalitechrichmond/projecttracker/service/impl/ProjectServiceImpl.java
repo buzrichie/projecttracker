@@ -35,7 +35,6 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = ProjectMapper.toEntity(projectDTO);
         project.setDeadline(java.time.LocalDate.now());
         Project saved = projectRepository.save(project);
-        auditService.saveLog("CREATE","Project",String.valueOf(saved.getId()), saved,"developer");
         return ProjectMapper.toDTO(saved);
     }
 
@@ -75,7 +74,6 @@ public class ProjectServiceImpl implements ProjectService {
         existing.setStatus(projectDTO.getStatus());
 
         Project updated = projectRepository.save(existing);
-        auditService.saveLog("UPDATE","Project",String.valueOf(updated.getId()), String.valueOf(updated),"developer");
         return ProjectMapper.toDTO(updated);
     }
 
@@ -86,7 +84,6 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found with ID: " + id));
         projectRepository.delete(project);
-        auditService.saveLog("DELETE","Project",String.valueOf(id), String.valueOf(project),"developer");
         return ProjectMapper.toDTO(project);
     }
 

@@ -33,7 +33,6 @@ public class DeveloperServiceImpl implements DeveloperService {
     public DeveloperDTO createDeveloper(DeveloperDTO developerDTO) {
         Developer developer = DeveloperMapper.toEntity(developerDTO);
         Developer saved = developerRepository.save(developer);
-        auditLogService.saveLog("CREATE","Developer",String.valueOf(saved.getId()), saved,"developer");
         return DeveloperMapper.toDTO(saved);
     }
 
@@ -69,7 +68,6 @@ public class DeveloperServiceImpl implements DeveloperService {
         developer.setSkills(developerDTO.getSkills());
 
         Developer updated = developerRepository.save(developer);
-        auditLogService.saveLog("CREATE","Developer",String.valueOf(updated.getId()), updated,"developer");
         return DeveloperMapper.toDTO(updated);
     }
 
@@ -80,7 +78,6 @@ public class DeveloperServiceImpl implements DeveloperService {
         Developer developer = developerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Developer not found with ID: " + id));
         developerRepository.delete(developer);
-        auditLogService.saveLog("DELETE","Developer",String.valueOf(id), developer,"developer");
         return DeveloperMapper.toDTO(developer);
     }
 
