@@ -35,7 +35,6 @@ public class UserServiceImpl implements UserService {
     public UserDTO createUser(UserDTO userDTO) {
         User User = UserMapper.toEntity(userDTO);
         User saved = userRepository.save(User);
-        auditLogService.saveLog("CREATE","User",String.valueOf(saved.getId()), saved,"User");
         return UserMapper.toDTO(saved);
     }
 
@@ -70,7 +69,6 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userDTO.getEmail());
 
         User updated = userRepository.save(user);
-        auditLogService.saveLog("UPDATE","User",String.valueOf(updated.getId()), updated,"User");
         return UserMapper.toDTO(updated);
     }
 
@@ -81,7 +79,6 @@ public class UserServiceImpl implements UserService {
         User User = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
         userRepository.delete(User);
-        auditLogService.saveLog("DELETE","User",String.valueOf(id), User,"User");
         return UserMapper.toDTO(User);
     }
 

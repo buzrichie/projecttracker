@@ -125,7 +125,6 @@ public class TaskServiceImpl implements TaskService {
             Set<Developer> developers = fetchDevelopersByIds(taskDTO.getDeveloperIds());
             existingTask.setDevelopers(developers);
         }
-        auditLogService.saveLog("UPDATE","Task",String.valueOf(existingTask.getId()), existingTask,"developer");
         return TaskMapper.toDTO(taskRepository.save(existingTask));
     }
 
@@ -136,7 +135,6 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         taskRepository.delete(task);
-        auditLogService.saveLog("DELETE","Task",String.valueOf(id), task,"developer");
         return TaskMapper.toDTO(task);
     }
 
@@ -156,15 +154,6 @@ public class TaskServiceImpl implements TaskService {
 
         task.getDevelopers().add(developer);
         Task updatedTask = taskRepository.save(task);
-
-        // Audit (Optional)
-        auditLogService.saveLog(
-                "UPDATE",
-                "Task",
-                task.getId().toString(),
-                updatedTask,
-                "developer"
-        );
 
         return TaskMapper.toDTO(updatedTask);
     }
