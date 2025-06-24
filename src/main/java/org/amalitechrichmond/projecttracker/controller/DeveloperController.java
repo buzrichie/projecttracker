@@ -45,7 +45,6 @@ public class DeveloperController {
 
         log.info("Get all developers reached with pagination");
         List<DeveloperDTO> developers = developerService.getAllDevelopers(page, size, sortBy, sortDir);
-//        return ResponseEntity.ok(developers);
         return ResponseHelper.success("Developers retrieved successfully", developers);
     }
 
