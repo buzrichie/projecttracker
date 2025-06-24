@@ -34,7 +34,7 @@ public class OAuth2LoginSuccessService implements AuthenticationSuccessHandler {
                 .orElseGet(() -> registerNewUser(email, oAuth2User));
 
         String token = jwtTokenProvider.generateToken(
-                user.getId().toString(),
+                user.getEmail(),
                 Map.of("email", user.getEmail(), "role", user.getRole())
         );
 
