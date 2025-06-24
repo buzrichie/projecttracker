@@ -5,10 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.amalitechrichmond.projecttracker.DTO.DeveloperDTO;
+import org.amalitechrichmond.projecttracker.ResponseHelper;
+import org.amalitechrichmond.projecttracker.model.ApiResponse;
 import org.amalitechrichmond.projecttracker.service.DeveloperService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +29,15 @@ public class DeveloperController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create a new developer")
-    public ResponseEntity<DeveloperDTO> createDeveloper(@RequestBody DeveloperDTO developerDTO) {
-        System.out.println("Creating new developer reached");
+    public ResponseEntity<ApiResponse<DeveloperDTO>> createDeveloper(@RequestBody DeveloperDTO developerDTO) {
         log.info("Creating new developer reached");
         DeveloperDTO created = developerService.createDeveloper(developerDTO);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        return ResponseHelper.success("Developer Created", created);
     }
 
     @GetMapping
     @Operation(summary = "Get all developers with pagination and sorting")
-    public ResponseEntity<List<DeveloperDTO>> getAllDevelopers(
+    public ResponseEntity<ApiResponse<List<DeveloperDTO>>> getAllDevelopers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name") String sortBy,
@@ -45,33 +45,36 @@ public class DeveloperController {
 
         log.info("Get all developers reached with pagination");
         List<DeveloperDTO> developers = developerService.getAllDevelopers(page, size, sortBy, sortDir);
-        return ResponseEntity.ok(developers);
+//        return ResponseEntity.ok(developers);
+        return ResponseHelper.success("Developers retrieved successfully", developers);
     }
 
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a developer by ID")
-    public ResponseEntity<DeveloperDTO> getDeveloperById(@PathVariable Long id) {
-        return ResponseEntity.ok(developerService.getDeveloperById(id));
+    public ResponseEntity<ApiResponse<DeveloperDTO>> getDeveloperById(@PathVariable Long id) {
+        DeveloperDTO developer = developerService.getDeveloperById(id);
+        return ResponseHelper.success("Developer retrieved successfully", developer);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a developer by ID")
-    public ResponseEntity<DeveloperDTO> updateDeveloper(@Valid @PathVariable Long id, @RequestBody DeveloperDTO developerDTO) {
+    public ResponseEntity<ApiResponse<DeveloperDTO>> updateDeveloper(@Valid @PathVariable Long id, @RequestBody DeveloperDTO developerDTO) {
         developerDTO.setId(id);
         DeveloperDTO updated = developerService.updateDeveloper(developerDTO);
-        return ResponseEntity.ok(updated);
+        return ResponseHelper.success("Developer updated successfully", updated);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a developer by ID")
-    public ResponseEntity<DeveloperDTO> deleteDeveloper(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<DeveloperDTO>> deleteDeveloper(@PathVariable Long id) {
         DeveloperDTO deleted = developerService.deleteDeveloper(id);
-        return ResponseEntity.ok(deleted);
+        return ResponseHelper.success("Developer deleted successfully", deleted);
     }
     @GetMapping("/top")
     @Operation(summary = "Get top 5 developers")
-    public ResponseEntity<List<DeveloperDTO>> getTopDevelopers() {
-        return ResponseEntity.ok(developerService.getTop5Developers());
+    public ResponseEntity<ApiResponse<List<DeveloperDTO>>> getTopDevelopers() {
+        return ResponseHelper.success("Top 5 developers retrieved", developerService.getTop5Developers());
+
     }
 }

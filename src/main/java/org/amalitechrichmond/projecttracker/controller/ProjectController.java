@@ -5,8 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.amalitechrichmond.projecttracker.DTO.ProjectDTO;
+import org.amalitechrichmond.projecttracker.ResponseHelper;
+import org.amalitechrichmond.projecttracker.model.ApiResponse;
 import org.amalitechrichmond.projecttracker.service.ProjectService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,40 +23,42 @@ public class ProjectController {
 
     @PostMapping
     @Operation(summary = "Create a new project")
-    public ResponseEntity<ProjectDTO> createProject(@Valid @RequestBody ProjectDTO projectDTO) {
-        return new ResponseEntity<>(projectService.createProject(projectDTO), HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse<ProjectDTO>> createProject(@Valid @RequestBody ProjectDTO projectDTO) {
+        ProjectDTO created = projectService.createProject(projectDTO);
+        return ResponseHelper.success("Project created successfully", created);
     }
 
     @GetMapping
     @Operation(summary = "Get all projects with pagination and sorting")
-    public ResponseEntity<List<ProjectDTO>> getAllProjects(
+    public ResponseEntity<ApiResponse<List <ProjectDTO>>> getAllProjects(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "deadline") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
         List<ProjectDTO> projects = projectService.getAllProjects(page, size, sortBy, sortDir);
-        return ResponseEntity.ok(projects);
+        return ResponseHelper.success("Projects retrieved successfully", projects);
     }
-
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing project by ID")
-    public ResponseEntity<ProjectDTO> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
+    public ResponseEntity<ApiResponse<ProjectDTO>> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
         projectDTO.setId(id);
-        return ResponseEntity.ok(projectService.updateProject(projectDTO));
+        ProjectDTO updated = projectService.updateProject(projectDTO);
+        return ResponseHelper.success("Project updated successfully", updated);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a project by ID")
-    public ResponseEntity<ProjectDTO> deleteProject(@Valid @PathVariable Long id) {
-        return ResponseEntity.ok(projectService.deleteProject(id));
+    public ResponseEntity<ApiResponse<ProjectDTO>> deleteProject(@Valid @PathVariable Long id) {
+        ProjectDTO deleted = projectService.deleteProject(id);
+        return ResponseHelper.success("Project deleted successfully", deleted);
     }
 
     @GetMapping("/without-tasks")
-    @Operation(summary = "Get all projects without task")
-    public ResponseEntity<List<ProjectDTO>> getProjectsWithoutTasks() {
-        return ResponseEntity.ok(projectService.getProjectsWithoutTasks());
+    @Operation(summary = "Get all projects without tasks")
+    public ResponseEntity<ApiResponse<List<ProjectDTO>>> getProjectsWithoutTasks() {
+        List<ProjectDTO> projects = projectService.getProjectsWithoutTasks();
+        return ResponseHelper.success("Projects without tasks retrieved", projects);
     }
-
 }
