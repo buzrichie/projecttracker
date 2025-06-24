@@ -26,7 +26,6 @@ import java.util.List;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final AuditLogServiceImpl auditService;
 
     @Override
     @Transactional

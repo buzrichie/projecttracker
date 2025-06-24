@@ -37,7 +37,6 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final DeveloperRepository developerRepository;
-    private final AuditLogService auditLogService;
     private final AccessChecker accessChecker;
 
     @Override
@@ -49,7 +48,6 @@ public class TaskServiceImpl implements TaskService {
         Set<Developer> developers = fetchDevelopersByIds(taskDTO.getDeveloperIds());
         Task task = TaskMapper.toEntity(taskDTO, project, developers);
         Task savedTask = taskRepository.save(task);
-        auditLogService.saveLog("CREATE","Task",String.valueOf(savedTask.getId()), savedTask,"developer");
         return TaskMapper.toDTO(savedTask);
     }
 
