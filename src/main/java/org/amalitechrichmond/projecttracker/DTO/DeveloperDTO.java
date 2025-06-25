@@ -1,5 +1,6 @@
 package org.amalitechrichmond.projecttracker.DTO;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
