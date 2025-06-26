@@ -11,7 +11,6 @@ import org.amalitechrichmond.projecttracker.repository.DeveloperRepository;
 import org.amalitechrichmond.projecttracker.repository.ProjectRepository;
 import org.amalitechrichmond.projecttracker.repository.TaskRepository;
 import org.amalitechrichmond.projecttracker.repository.TaskStatusCount;
-import org.amalitechrichmond.projecttracker.service.AuditLogService;
 import org.amalitechrichmond.projecttracker.service.TaskService;
 import org.amalitechrichmond.projecttracker.util.AccessChecker;
 import org.springframework.cache.annotation.CacheEvict;
@@ -196,5 +195,13 @@ public class TaskServiceImpl implements TaskService {
     private Set<Developer> fetchDevelopersByIds(Set<Long> ids) {
         if (ids == null || ids.isEmpty()) return new HashSet<>();
         return new HashSet<>(developerRepository.findAllById(ids));
+    }
+
+    @Override
+    public List<TaskDTO> getTasksByUserId(Long userId) {
+        List<Task> tasks = taskRepository.findTasksByUserId(userId);
+        return tasks.stream()
+                .map(TaskMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }
