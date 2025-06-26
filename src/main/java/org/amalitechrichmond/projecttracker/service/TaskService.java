@@ -17,4 +17,5 @@ public interface TaskService {
     List<TaskDTO> getTasksByDeveloperId(Long developerId, int page, int size, String sortBy, String sortDir);
     List<TaskDTO> getOverdueTasks();
     List<TaskStatusCount> getTaskStatusCounts();
+    List<TaskDTO> getTasksByUserId(Long userId);
 }
