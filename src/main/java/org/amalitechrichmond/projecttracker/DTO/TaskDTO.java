@@ -25,7 +25,7 @@ public class TaskDTO {
     @Size(max = 255, message = "Description must not exceed 255 characters")
     private String description;
 
-    @NotBlank(message = "Status is required")
+    @NotNull(message = "Status is required")
     private TaskStatus status;
 
     @FutureOrPresent(message = "Due date must be today or in the future")
