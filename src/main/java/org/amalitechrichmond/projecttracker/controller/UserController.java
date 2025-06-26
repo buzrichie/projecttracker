@@ -4,9 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.amalitechrichmond.projecttracker.DTO.TaskDTO;
 import org.amalitechrichmond.projecttracker.DTO.UserDTO;
 import org.amalitechrichmond.projecttracker.ResponseHelper;
 import org.amalitechrichmond.projecttracker.model.ApiResponse;
+import org.amalitechrichmond.projecttracker.service.TaskService;
 import org.amalitechrichmond.projecttracker.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final TaskService taskService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
@@ -69,5 +72,13 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDTO>> deleteUser(@PathVariable Long id) {
         UserDTO deleted = userService.deleteUser(id);
         return ResponseHelper.success("User deleted successfully", deleted);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}/tasks")
+    @Operation(summary = "Get a user Tasks")
+    public ResponseEntity<ApiResponse<List<TaskDTO>>> getTasksByUser(@PathVariable("id") Long userId) {
+        List<TaskDTO> tasks = taskService.getTasksByUserId(userId);
+        return ResponseHelper.success("" ,tasks);
     }
 }
