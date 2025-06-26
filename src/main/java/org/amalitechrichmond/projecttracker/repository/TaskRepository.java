@@ -24,6 +24,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<TaskStatusCount> countTasksByStatus();
 
     @Query("SELECT t FROM Task t JOIN t.developers d WHERE d.id = :userId")
-    List<Task> findTasksByDeveloperId(Long userId);
+    List<Task> findTasksByUserId(Long userId);
 
 }
