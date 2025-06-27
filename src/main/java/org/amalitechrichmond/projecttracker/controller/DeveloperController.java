@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/developers")
+@RequestMapping("/api/v1/developers")
 @RequiredArgsConstructor
 
 @Tag(name = "Developer Management", description = "CRUD operations for developers")

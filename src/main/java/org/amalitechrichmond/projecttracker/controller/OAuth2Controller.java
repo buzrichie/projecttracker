@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Component
 @RestController
-@RequestMapping("/auth/oauth2")
+@RequestMapping("/api/v1/auth/oauth2")
 public class OAuth2Controller {
 
     @Autowired
