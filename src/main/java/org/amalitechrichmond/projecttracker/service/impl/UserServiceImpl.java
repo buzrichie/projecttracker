@@ -82,6 +82,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO getLoggedInUser() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

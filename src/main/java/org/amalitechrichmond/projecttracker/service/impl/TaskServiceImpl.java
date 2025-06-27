@@ -198,6 +198,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+//    @Cacheable(value = "TasksByUserId", key="#userId")
     public List<TaskDTO> getTasksByUserId(Long userId) {
         List<Task> tasks = taskRepository.findTasksByUserId(userId);
         return tasks.stream()

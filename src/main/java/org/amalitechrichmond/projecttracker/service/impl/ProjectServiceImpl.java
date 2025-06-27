@@ -97,26 +97,23 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "projectSummary", key = "#id")
     public ProjectSummaryDTO getProjectSummary(Long id) {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-        ProjectSummaryDTO summary = new ProjectSummaryDTO();
-        summary.setProjectId(project.getId());
-        summary.setProjectName(project.getName());
-        summary.setDescription(project.getDescription());
-        summary.setStatus(project.getStatus().name());
 
         int totalTasks = project.getTasks().size();
         int completedTasks = (int) project.getTasks().stream()
                 .filter(task -> task.getStatus().name().equals("COMPLETED"))
                 .count();
 
-        summary.setTotalTasks(totalTasks);
-        summary.setCompletedTasks(completedTasks);
-
-        return summary;
+        return ProjectSummaryDTO.builder()
+                .projectId(project.getId())
+        .projectName(project.getName())
+        .description(project.getDescription())
+        .status(project.getStatus().name())
+        .totalTasks(totalTasks)
+        .completedTasks(completedTasks).build();
     }
-
-
 }

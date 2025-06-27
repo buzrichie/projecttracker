@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -28,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     AuthenticationManager authenticationManager;
 
     @Override
+    @Transactional
     public AuthResponseDTO login(AuthLoginRequestDTO request) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
@@ -42,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional
     public UserDTO register(AuthRegisterRequestDTO request) {
         checkForExistingData(request);
         User user = UserMapper.toEntity(request);
