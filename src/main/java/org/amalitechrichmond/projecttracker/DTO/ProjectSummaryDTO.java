@@ -1,9 +1,11 @@
 package org.amalitechrichmond.projecttracker.DTO;
 
+import lombok.Builder;
 import lombok.Data;
 import java.util.List;
 
 @Data
+@Builder
 public class ProjectSummaryDTO {
     private Long projectId;
     private String projectName;
