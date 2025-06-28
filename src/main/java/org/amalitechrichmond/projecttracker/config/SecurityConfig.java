@@ -45,16 +45,16 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/auth/oauth2/success",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/oauth2/success",
                                 "/actuator/**"
                         ).permitAll()
                         .requestMatchers("/swagger/**","/swagger-ui/**","/admin/**")
                         .hasRole("ADMIN")
-                        .requestMatchers("/api/projects/**")
+                        .requestMatchers("/api/v1/projects/**")
                         .hasAnyAuthority("MANAGER", "ADMIN")
-                        .requestMatchers("/api/tasks/**")
+                        .requestMatchers("/api/v1/tasks/**")
                         .hasAnyAuthority("DEVELOPER", "ADMIN")
 
 
